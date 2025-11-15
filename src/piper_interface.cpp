@@ -45,10 +45,9 @@ inline int float_to_int(const float val, const float min, const float max,
   return static_cast<int>((val - min) * ((1 << bits) - 1) / span);
 }
 
-
 /**
-* Helper functions
-*/
+ * Helper functions
+ */
 
 void disable_arm(PiperInterface &piper_interface, float timeout_sec) {
   // disable arm first
@@ -56,11 +55,8 @@ void disable_arm(PiperInterface &piper_interface, float timeout_sec) {
   while (true) {
     piper_interface.set_emergency_stop(EmergencyStop::RESUME);
     sleep_ms(100);
-    if (
-      piper_interface.get_control_mode() == ControlMode::STANDBY 
-      && piper_interface.get_arm_status() == ArmStatus::NORMAL
-    )
-    {
+    if (piper_interface.get_control_mode() == ControlMode::STANDBY &&
+        piper_interface.get_arm_status() == ArmStatus::NORMAL) {
       break;
     }
     if ((get_time_ms() - start_time).count() > timeout_sec * 1000) {
@@ -88,10 +84,13 @@ void enable_arm(PiperInterface &piper_interface, float timeout_sec) {
   }
 
   // set arm mode
-  piper_interface.set_arm_mode(ControlMode::CAN_COMMAND, MoveMode::MIT, 100, ArmController::MIT);
+  piper_interface.set_arm_mode(ControlMode::CAN_COMMAND, MoveMode::MIT, 100,
+                               ArmController::MIT);
   sleep_ms(100);
 
-  if (piper_interface.get_arm_status() != ArmStatus::NORMAL || piper_interface.get_control_mode() != ControlMode::CAN_COMMAND || piper_interface.get_move_mode() != MoveMode::MIT) {
+  if (piper_interface.get_arm_status() != ArmStatus::NORMAL ||
+      piper_interface.get_control_mode() != ControlMode::CAN_COMMAND ||
+      piper_interface.get_move_mode() != MoveMode::MIT) {
     spdlog::error("Failed to set arm mode");
     throw std::runtime_error("Failed to set arm mode");
   }
@@ -149,7 +148,8 @@ void reset_gripper(PiperInterface &piper_interface, float timeout_sec) {
         PiperInterface
 ********************************/
 
-PiperInterface::PiperInterface(std::string interface_name) {
+PiperInterface::PiperInterface(std::string interface_name,
+                               bool gripper_active) {
   socketcan_ = new SocketCAN();
   socketcan_->open(interface_name.c_str());
   socketcan_->start_receiver_thread();
@@ -162,6 +162,7 @@ PiperInterface::PiperInterface(std::string interface_name) {
                   "power supply.");
     throw std::runtime_error("Failed to connect to Piper arm");
   }
+  this->gripper_active_ = gripper_active;
 }
 
 void PiperInterface::transmit(can_frame_t &frame) {
@@ -178,7 +179,9 @@ void PiperInterface::can_receive_frame(const can_frame_t *frame) {
   if (frame->can_id >= 0x251 && frame->can_id <= 0x256) { // high speed feedback
     int motor_id = frame->can_id - 0x251;
     qvel_[motor_id].store(can_data_to_int16_t(frame->data) / 1000.0f);
-    tau_[motor_id].store(can_data_to_int16_t(frame->data + 2) / 1000.0f); // TODO: use KT to estimate torque from current
+    tau_[motor_id].store(
+        can_data_to_int16_t(frame->data + 2) /
+        1000.0f); // TODO: use KT to estimate torque from current
     qpos_[motor_id].store(can_data_to_int32_t(frame->data + 4) / 1000.0f);
   } else if (frame->can_id >= 0x261 &&
              frame->can_id <= 0x266) { // low speed feedback
@@ -189,7 +192,8 @@ void PiperInterface::can_receive_frame(const can_frame_t *frame) {
     arm_status_.store(ArmStatus(can_data_to_uint8_t(frame->data + 1)));
     move_mode_.store(MoveMode(can_data_to_uint8_t(frame->data + 2)));
   } else if (frame->can_id == 0x2A8) {
-    gripper_pos_.store(can_data_to_int32_t(frame->data) / (GRIPPER_ANGLE_MAX * 1000.0f * 1000.0f));
+    gripper_pos_.store(can_data_to_int32_t(frame->data) /
+                       (GRIPPER_ANGLE_MAX * 1000.0f * 1000.0f));
     gripper_effort_.store(can_data_to_uint16_t(frame->data + 4) / 1000.0f);
     gripper_status_.store(GripperStatus(can_data_to_uint8_t(frame->data + 6)));
   }
@@ -207,6 +211,9 @@ bool PiperInterface::is_arm_enabled() {
 }
 
 bool PiperInterface::is_gripper_enabled() {
+  if (!gripper_active_) {
+    return true; // if gripper is not active, consider it as enabled
+  }
   return gripper_status_.load().driver_enable_status;
 }
 
@@ -231,12 +238,21 @@ void PiperInterface::disable_arm() {
 }
 
 void PiperInterface::enable_gripper() {
+  if (!gripper_active_) {
+    spdlog::warn("Gripper is not active, cannot enable gripper");
+    return;
+  }
   set_gripper(0.0f, 0.0f, GripperCode::ENABLE); // enable
   sleep_ms(200);
 }
 
 void PiperInterface::disable_gripper() {
-  set_gripper(0.0f, 0.0f, GripperCode::DISABLE_AND_CLEAR_ERROR); // disable and clear error
+  if (!gripper_active_) {
+    spdlog::warn("Gripper is not active, cannot disable gripper");
+    return;
+  }
+  set_gripper(0.0f, 0.0f,
+              GripperCode::DISABLE_AND_CLEAR_ERROR); // disable and clear error
   sleep_ms(200);
 }
 
@@ -254,7 +270,8 @@ void PiperInterface::set_emergency_stop(EmergencyStop emergency_stop) {
  * It has a sleep, don't call in main control loop.
  */
 void PiperInterface::set_arm_mode(ControlMode ctrl_mode, MoveMode move_mode,
-                                   uint8_t speed_rate, ArmController arm_controller) {
+                                  uint8_t speed_rate,
+                                  ArmController arm_controller) {
   if (!is_arm_enabled()) {
     spdlog::warn("Cannot call set_arm_mode without enabling arm!");
     return;
@@ -290,7 +307,7 @@ void PiperInterface::set_to_damping_mode() {
  * checksum.
  */
 void PiperInterface::set_joint_pos_vel_torque(const JointState &joint_state,
-                                    const Gain &gain) {
+                                              const Gain &gain) {
   if (get_move_mode() != MoveMode::MIT) {
     spdlog::error("Cannot call set_joint_pos_vel_torque in non-MIT mode!");
     return;
@@ -335,7 +352,8 @@ void PiperInterface::set_joint_pos_vel_torque(const JointState &joint_state,
     int kp_int = float_to_int(gain.kp[motor_id], KP_MIN, KP_MAX, 12);
     int kd_int = float_to_int(gain.kd[motor_id], KD_MIN, KD_MAX, 12);
     float kt = (motor_id < 3 ? 1 / 4.0 : 1 / 0.8);
-    int t_ref = float_to_int(joint_state.torque[motor_id] * kt, T_MIN, T_MAX, 8);
+    int t_ref =
+        float_to_int(joint_state.torque[motor_id] * kt, T_MIN, T_MAX, 8);
 
     frame.data[0] = (pos_ref >> 8) & 0xFF; // High byte
     frame.data[1] = pos_ref & 0xFF;        // Low byte
@@ -357,9 +375,15 @@ void PiperInterface::set_joint_pos_vel_torque(const JointState &joint_state,
 }
 
 // Even when the status_code is disable, the gripper moves to the position.
-void PiperInterface::set_gripper(float position, float effort, GripperCode status_code) {
-  int32_t pos_ref = static_cast<int32_t>((position * 0.07) * 1000 * 1000); // 0-1 to m to mm to micrometer
-  uint16_t effort_ref = static_cast<uint16_t>(effort * 5000); // 0-1 to Nm to mNm
+void PiperInterface::set_gripper(float position, float effort,
+                                 GripperCode status_code) {
+  if (!gripper_active_) {
+    return; // if gripper is not active, do nothing
+  }
+  int32_t pos_ref = static_cast<int32_t>((position * 0.07) * 1000 *
+                                         1000); // 0-1 to m to mm to micrometer
+  uint16_t effort_ref =
+      static_cast<uint16_t>(effort * 5000); // 0-1 to Nm to mNm
 
   can_frame_t frame;
   frame.can_id = 0x159;
@@ -373,7 +397,6 @@ void PiperInterface::set_gripper(float position, float effort, GripperCode statu
   frame.data[7] = 0;
   transmit(frame);
   sleep_us(COMMUNICATION_DELAY);
-
 }
 
 JointState PiperInterface::get_current_state() {

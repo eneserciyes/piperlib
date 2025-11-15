@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 
 TEST_CASE("Motor control tests", "[piper]") {
-  PiperInterface piper_interface("can0");
+  PiperInterface piper_interface("can0", false);
 
   reset_arm(piper_interface);
   reset_gripper(piper_interface);

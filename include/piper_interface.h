@@ -35,8 +35,8 @@ union DriverStatus {
     bool driver_enable_status : 1;
     bool stall_status : 1;
   };
-  DriverStatus(): status(0) {};
-  DriverStatus(uint8_t status): status(status) {};
+  DriverStatus() : status(0) {};
+  DriverStatus(uint8_t status) : status(status) {};
 };
 
 union GripperStatus {
@@ -51,10 +51,9 @@ union GripperStatus {
     bool driver_enable_status : 1;
     bool homing_status : 1;
   };
-  GripperStatus(): status(0) {};
-  GripperStatus(uint8_t status): status(status) {};
+  GripperStatus() : status(0) {};
+  GripperStatus(uint8_t status) : status(status) {};
 };
-
 
 enum class ArmStatus : uint8_t {
   NORMAL = 0x00,
@@ -76,14 +75,14 @@ enum class ArmStatus : uint8_t {
 };
 
 enum class TeachStatus : uint8_t {
-   OFF = 0x00,
-   START_RECORD = 0x01,
-   END_RECORD = 0x02,
-   EXECUTE = 0x03,
-   PAUSE = 0x04,
-   CONTINUE = 0x05,
-   TERMINATE = 0x06,
-   MOVE_TO_START = 0x07,
+  OFF = 0x00,
+  START_RECORD = 0x01,
+  END_RECORD = 0x02,
+  EXECUTE = 0x03,
+  PAUSE = 0x04,
+  CONTINUE = 0x05,
+  TERMINATE = 0x06,
+  MOVE_TO_START = 0x07,
 };
 
 enum class MotionStatus : uint8_t {
@@ -98,7 +97,7 @@ enum class GripperCode : uint8_t {
   ENABLE_AND_CLEAR_ERROR = 0x03
 };
 
-enum class ControlMode : uint8_t { 
+enum class ControlMode : uint8_t {
   STANDBY = 0x00,
   CAN_COMMAND = 0x01,
   TEACH_MODE = 0x02,
@@ -117,13 +116,11 @@ enum class MoveMode : uint8_t {
   MIT = 0x04,
 };
 
-
 enum class ArmController : uint8_t {
   POSITION_VELOCITY = 0x00,
   MIT = 0xAD,
   INVALID = 0xFF,
 };
-
 
 enum class EmergencyStop : uint8_t {
   INVALID = 0x00,
@@ -131,10 +128,9 @@ enum class EmergencyStop : uint8_t {
   RESUME = 0x02
 };
 
-
 class PiperInterface {
 public:
-  PiperInterface(std::string interface_name);
+  PiperInterface(std::string interface_name, bool gripper_active = true);
   ~PiperInterface() { delete socketcan_; }
 
   void enable_arm();
@@ -144,22 +140,28 @@ public:
 
   void set_to_damping_mode();
   void set_emergency_stop(EmergencyStop emergency_stop);
-  void set_arm_mode(ControlMode ctrl_mode, MoveMode move_mode, uint8_t speed_rate, ArmController arm_controller);
+  void set_arm_mode(ControlMode ctrl_mode, MoveMode move_mode,
+                    uint8_t speed_rate, ArmController arm_controller);
 
-  void set_joint_pos_vel_torque(const JointState &joint_state, const Gain &gain);
-  void set_gripper(float position, float effort, GripperCode status_code = GripperCode::ENABLE);
+  void set_joint_pos_vel_torque(const JointState &joint_state,
+                                const Gain &gain);
+  void set_gripper(float position, float effort,
+                   GripperCode status_code = GripperCode::ENABLE);
 
   JointState get_current_state();
-  DriverStatus get_driver_status(int motor_id) { return driver_status_[motor_id].load(); };
+  DriverStatus get_driver_status(int motor_id) {
+    return driver_status_[motor_id].load();
+  };
   ArmStatus get_arm_status() { return arm_status_.load(); };
   ControlMode get_control_mode() { return control_mode_.load(); };
   GripperStatus get_gripper_status() { return gripper_status_.load(); };
   MoveMode get_move_mode() { return move_mode_.load(); };
 
-
   void standby(MoveMode move_mode, ArmController arm_controller);
   std::string get_piper_interface_name() { return interface_name_; }
-  std::string get_piper_firmware_version() { return "1.0.0"; } // TODO: get firmware version
+  std::string get_piper_firmware_version() {
+    return "1.0.0";
+  } // TODO: get firmware version
 
   bool is_arm_enabled();
   bool is_gripper_enabled();
@@ -171,6 +173,7 @@ private:
   std::string interface_name_;
   SocketCAN *socketcan_;
   bool can_connection_status_ = false;
+  bool gripper_active_ = true;
   void can_receive_frame(const can_frame_t *frame);
   void transmit(can_frame_t &frame);
 
