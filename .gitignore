@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.png
+.mypy_cache/
+
+# Virtual environments
+.venv
+
+# logs
+*.log
+*.npy
+*.npz
+
+# CMake
+build
+__pycache__
+*cpython*.so
+*.so
+python/data
+build*
+
+# Clang
+.cache/

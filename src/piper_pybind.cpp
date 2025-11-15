@@ -1,0 +1,65 @@
+#include "common.h"
+#include "config.h"
+#include "controller_base.h"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(_piperlib, m) {
+  py::class_<JointState>(m, "JointState")
+      .def(py::init<>())
+      .def(
+          py::init<std::array<double, MOTOR_DOF>, std::array<double, MOTOR_DOF>,
+                   std::array<double, MOTOR_DOF>, double>())
+      .def_readwrite("timestamp", &JointState::timestamp)
+      .def_readwrite("pos", &JointState::pos)
+      .def_readwrite("vel", &JointState::vel)
+      .def_readwrite("torque", &JointState::torque)
+      .def_readwrite("gripper_pos", &JointState::gripper_pos)
+      .def("__add__", [](const JointState &self,
+                         const JointState &other) { return self + other; })
+      .def("__mul__", [](const JointState &self, const float &scalar) {
+        return self * scalar;
+      });
+  py::class_<Gain>(m, "Gain")
+      .def(py::init<>())
+      .def(py::init<std::array<double, MOTOR_DOF>,
+                    std::array<double, MOTOR_DOF>>())
+      .def_readwrite("kp", &Gain::kp)
+      .def_readwrite("kd", &Gain::kd)
+      .def("__add__",
+           [](const Gain &self, const Gain &other) { return self + other; })
+      .def("__mul__",
+           [](const Gain &self, const float &scalar) { return self * scalar; });
+  py::class_<PiperController>(m, "PiperController")
+      .def(py::init<ControllerConfig>())
+      .def("reset_to_home", &PiperController::resetToHome)
+      .def("start", &PiperController::start)
+      .def("stop", &PiperController::stop)
+      .def("is_running", &PiperController::isRunning)
+      .def("get_current_state", &PiperController::getCurrentState)
+      .def("get_current_target", &PiperController::getCurrentTarget)
+      .def("set_target", &PiperController::setTarget, py::arg("new_target_pos"),
+           py::arg("new_target_gripper_pos"),
+           py::arg("new_target_vel") =
+               std::array<double, MOTOR_DOF>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+           py::arg("new_target_acc") =
+               std::array<double, MOTOR_DOF>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+  py::class_<ControllerConfig>(m, "ControllerConfig")
+      .def(py::init<>())
+      .def_readwrite("interface_name", &ControllerConfig::interface_name)
+      .def_readwrite("urdf_path", &ControllerConfig::urdf_path)
+      .def_readwrite("default_kp", &ControllerConfig::default_kp)
+      .def_readwrite("default_kd", &ControllerConfig::default_kd)
+      .def_readwrite("joint_vel_max", &ControllerConfig::joint_vel_max)
+      .def_readwrite("joint_acc_max", &ControllerConfig::joint_acc_max)
+      .def_readwrite("over_current_cnt_max",
+                     &ControllerConfig::over_current_cnt_max)
+      .def_readwrite("controller_freq_hz",
+                     &ControllerConfig::controller_freq_hz)
+      .def_readwrite("gravity_compensation",
+                     &ControllerConfig::gravity_compensation)
+      .def_readwrite("gripper_on", &ControllerConfig::gripper_on);
+}

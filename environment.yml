@@ -1,0 +1,9 @@
+name: piperlib
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pinocchio
+  - pybind11
+  - spdlog
+  - catch2
