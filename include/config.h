@@ -27,7 +27,7 @@ public:
       std::array<double, MOTOR_DOF> joint_acc_max = {3.0, 3.0, 3.0, 3.0, 3.0,
                                                      3.0},
       int over_current_cnt_max = 20, double controller_freq_hz = 500.0,
-      bool gravity_compensation = true, bool gripper_on = true)
+      bool gravity_compensation = true, bool gripper_on = false)
       : interface_name(interface_name), urdf_path(urdf_path),
         default_kp(default_kp), default_kd(default_kd),
         joint_vel_max(joint_vel_max), joint_acc_max(joint_acc_max),

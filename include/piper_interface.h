@@ -163,6 +163,7 @@ public:
     return "1.0.0";
   } // TODO: get firmware version
 
+  bool is_gripper_active() { return gripper_active_; }
   bool is_arm_enabled();
   bool is_gripper_enabled();
 

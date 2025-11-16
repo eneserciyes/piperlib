@@ -103,6 +103,10 @@ void reset_arm(PiperInterface &piper_interface, float timeout_sec) {
 }
 
 void disable_gripper(PiperInterface &piper_interface, float timeout_sec) {
+  if (!piper_interface.is_gripper_active()) {
+    spdlog::warn("Gripper is not active, skipping gripper disable");
+    return;
+  }
   auto start_time = get_time_ms();
   // disable gripper
   while (true) {
@@ -121,6 +125,10 @@ void disable_gripper(PiperInterface &piper_interface, float timeout_sec) {
 }
 
 void enable_gripper(PiperInterface &piper_interface, float timeout_sec) {
+  if (!piper_interface.is_gripper_active()) {
+    spdlog::warn("Gripper is not active, skipping gripper enable");
+    return;
+  }
   auto start_time = get_time_ms();
   // enable gripper
   while (true) {
