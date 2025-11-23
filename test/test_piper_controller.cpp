@@ -4,7 +4,8 @@
 int main() {
   try {
     ControllerConfig controller_config;
-    controller_config.urdf_path = "../urdf/piper_nyu_description.urdf";
+    controller_config.interface_name = "can_left";
+    controller_config.urdf_path = "../urdf/piper_no_gripper_description.urdf";
     spdlog::info("Controller config: {}", controller_config.interface_name);
     PiperController joint_controller(controller_config);
 
