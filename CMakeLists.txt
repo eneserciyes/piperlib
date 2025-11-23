@@ -54,7 +54,7 @@ target_link_libraries(PiperController
 # TESTS (only build if not installing via pip)
 if(NOT SKBUILD)
   add_executable(test_interface test/test_interface.cpp)
-  target_link_libraries(test_interface PRIVATE PiperController Catch2::Catch2WithMain)
+  target_link_libraries(test_interface PRIVATE PiperController Catch2::Catch2)
 
   add_executable(test_gravity_compensation test/test_gravity_compensation.cpp)
   target_link_libraries(test_gravity_compensation PRIVATE PiperController)
