@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
   std::string urdf_path = argv[1];
   InverseDynamicsSolver solver(urdf_path);
-  PiperInterface piper_interface("can0");
+  PiperInterface piper_interface("can_left");
   if (piper_interface.get_arm_status() == ArmStatus::EMERGENCY_STOP) {
     spdlog::error("Arm status is emergency stop, first resume emergency stop!");
     exit(1);
