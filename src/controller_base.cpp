@@ -19,15 +19,16 @@ PiperController::~PiperController() { stop(); }
 
 void PiperController::resetToHome() {
   setTarget(
-      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
-      1.0f, 
+      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+      1.0f,
       3.0f // minimum duration
   );
 
   // wait until homed
   while (trajectory_active_.load()) {
-    std::this_thread::sleep_for(0.1f);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
+  spdlog::info("Arm reset to home successfully");
 }
 
 bool PiperController::start() {
