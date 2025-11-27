@@ -12,12 +12,24 @@ PiperController::PiperController(ControllerConfig controller_config)
   target_velocity_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   target_acceleration_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   target_gripper_pos_ = 1.0f;
+  minimum_duration_ = 0.0f;
 }
 
 PiperController::~PiperController() { stop(); }
 
 void PiperController::resetToHome() {
-  // TODO: implement
+  setTarget(
+      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
+      1.0f, 
+      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
+      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
+      3.0f; // minimum duration
+  )
+
+  // wait until homed
+  while (trajectory_active_.load()) {
+    std::this_thread::sleep_for(0.1f);
+  }
 }
 
 bool PiperController::start() {
@@ -62,12 +74,14 @@ void PiperController::setTarget(
     const std::array<double, MOTOR_DOF> &new_target_pos,
     const float new_target_gripper_pos,
     const std::array<double, MOTOR_DOF> &new_target_vel,
-    const std::array<double, MOTOR_DOF> &new_target_acc) {
+    const std::array<double, MOTOR_DOF> &new_target_acc,
+    const float minimum_duration = 0.0f) {
   std::lock_guard<std::mutex> lock(target_mutex_);
   target_position_ = new_target_pos;
   target_velocity_ = new_target_vel;
   target_acceleration_ = new_target_acc;
   target_gripper_pos_ = new_target_gripper_pos;
+  minimum_duration_ = minimum_duration;
   new_target_flag_.store(true);
   spdlog::debug("Target set to: [{}]", ::join(new_target_pos));
 }
@@ -84,7 +98,6 @@ JointState PiperController::getCurrentState() {
 }
 
 void PiperController::driverProtection() {
-  // TODO: make sure this is working
   bool over_current = false;
   for (int i = 0; i < MOTOR_DOF; ++i) {
     DriverStatus driver_status = piper_interface_.get_driver_status(i);
@@ -153,7 +166,6 @@ void PiperController::controlLoop() {
   input.max_acceleration = controller_config_.joint_acc_max;
 
   JointState output_joint_cmd;
-  bool trajectory_active{false};
 
   RateLimiter rate_limiter(controller_config_.controller_freq_hz);
   while (!should_stop_.load()) {
@@ -162,10 +174,11 @@ void PiperController::controlLoop() {
       input.target_position = target_position_;
       input.target_velocity = target_velocity_;
       input.target_acceleration = target_acceleration_;
-      trajectory_active = true;
+      input.minimum_duration = minimum_duration_;
+      trajectory_active_.store(true);
       spdlog::debug("New target received: [{}]", ::join(input.target_position));
     }
-    if (trajectory_active) {
+    if (trajectory_active_.load()) {
       ruckig::Result result = otg_.update(input, output);
 
       if (result == ruckig::Result::Working) {
@@ -186,7 +199,7 @@ void PiperController::controlLoop() {
         output.pass_to_input(input);
       } else if (result == ruckig::Result::Finished) {
         spdlog::debug("Trajectory completed");
-        trajectory_active = false;
+        trajectory_active_.store(false);
       }
     } else {
       if (controller_config_.gravity_compensation) {
