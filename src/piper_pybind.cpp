@@ -43,6 +43,7 @@ PYBIND11_MODULE(_piperlib, m) {
       .def("get_current_target", &PiperController::getCurrentTarget)
       .def("set_target", &PiperController::setTarget, py::arg("new_target_pos"),
            py::arg("new_target_gripper_pos"),
+           py::arg("minimum_duration") = 0.0f,
            py::arg("new_target_vel") =
                std::array<double, MOTOR_DOF>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
            py::arg("new_target_acc") =
