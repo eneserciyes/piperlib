@@ -23,6 +23,7 @@ public:
   void setTarget(
       const std::array<double, MOTOR_DOF> &new_target_pos,
       const float new_target_gripper_pos,
+      const float minimum_duration = 0.0f,
       const std::array<double, MOTOR_DOF> &new_target_vel = {0.0, 0.0, 0.0, 0.0,
                                                              0.0, 0.0},
       const std::array<double, MOTOR_DOF> &new_target_acc = {0.0, 0.0, 0.0, 0.0,

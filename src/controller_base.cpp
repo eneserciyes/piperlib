@@ -21,10 +21,8 @@ void PiperController::resetToHome() {
   setTarget(
       {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
       1.0f, 
-      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
-      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, 
-      3.0f; // minimum duration
-  )
+      3.0f // minimum duration
+  );
 
   // wait until homed
   while (trajectory_active_.load()) {
@@ -73,9 +71,9 @@ void PiperController::stop() {
 void PiperController::setTarget(
     const std::array<double, MOTOR_DOF> &new_target_pos,
     const float new_target_gripper_pos,
+    const float minimum_duration,
     const std::array<double, MOTOR_DOF> &new_target_vel,
-    const std::array<double, MOTOR_DOF> &new_target_acc,
-    const float minimum_duration = 0.0f) {
+    const std::array<double, MOTOR_DOF> &new_target_acc) {
   std::lock_guard<std::mutex> lock(target_mutex_);
   target_position_ = new_target_pos;
   target_velocity_ = new_target_vel;
