@@ -53,11 +53,11 @@ int main(int argc, char* argv[]) {
     controller_config.urdf_path = urdf_path;
     controller_config.gripper_on = gripper_on;
 
-    spdlog::info("Controller config: interface={}, urdf={}, gripper={}", 
-                 controller_config.interface_name, 
+    spdlog::info("Controller config: interface={}, urdf={}, gripper={}",
+                 controller_config.interface_name,
                  controller_config.urdf_path,
                  controller_config.gripper_on);
-                 
+
     PiperController joint_controller(controller_config);
 
     if (!joint_controller.start()) {
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 
     spdlog::info("Controller started. Commanding various joint states...");
 
-    sleep_ms(1000);
+    joint_controller.resetToHome();
 
     joint_controller.setTarget({0.2, 0.2, -0.2, 0.3, -0.2, 0.5}, 0.0f);
     sleep_ms(3000);
