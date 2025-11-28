@@ -19,7 +19,7 @@ PiperController::~PiperController() { stop(); }
 
 void PiperController::resetToHome() {
   setTarget(
-      {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+      controller_config_.home_position,
       1.0f,
       3.0f // minimum duration
   );
@@ -29,7 +29,7 @@ void PiperController::resetToHome() {
     auto current_state = getCurrentState();
     bool is_close = true;
     for (size_t i = 0; i < MOTOR_DOF; ++i) {
-      if (std::abs(current_state.pos[i]) > 0.05) {
+      if (std::abs(current_state.pos[i] - controller_config_.home_position[i]) > 0.05) {
         is_close = false;
         break;
       }
