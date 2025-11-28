@@ -25,7 +25,19 @@ void PiperController::resetToHome() {
   );
 
   // wait until homed
-  while (trajectory_active_.load()) {
+  while (true) {
+    auto current_state = getCurrentState();
+    bool is_close = true;
+    for (size_t i = 0; i < MOTOR_DOF; ++i) {
+      if (std::abs(current_state.pos[i]) > 0.05) {
+        is_close = false;
+        break;
+      }
+    }
+
+    if (is_close) {
+      break;
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   spdlog::info("Arm reset to home successfully");
