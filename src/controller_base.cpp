@@ -189,6 +189,7 @@ void PiperController::controlLoop() {
       trajectory_active_.store(true);
       spdlog::debug("New target received: [{}]", ::join(input.target_position));
     }
+    auto current_joint_state = piper_interface_.get_current_state();
     if (trajectory_active_.load()) {
       ruckig::Result result = otg_.update(input, output);
 
@@ -198,8 +199,8 @@ void PiperController::controlLoop() {
 
         if (controller_config_.gravity_compensation) {
           std::array<double, MOTOR_DOF> gravity_compensation =
-              solver_.inverse_dynamics(output_joint_cmd.pos,
-                                       output_joint_cmd.vel,
+              solver_.inverse_dynamics(current_joint_state.pos,
+                                       current_joint_state.vel,
                                        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
           output_joint_cmd.torque = gravity_compensation;
         } else {
@@ -214,7 +215,6 @@ void PiperController::controlLoop() {
       }
     } else {
       if (controller_config_.gravity_compensation) {
-        auto current_joint_state = piper_interface_.get_current_state();
         std::array<double, MOTOR_DOF> gravity_compensation =
             solver_.inverse_dynamics(current_joint_state.pos,
                                      current_joint_state.vel,
