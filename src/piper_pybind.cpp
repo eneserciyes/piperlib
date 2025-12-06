@@ -56,6 +56,7 @@ PYBIND11_MODULE(_piperlib, m) {
       .def_readwrite("default_kd", &ControllerConfig::default_kd)
       .def_readwrite("joint_vel_max", &ControllerConfig::joint_vel_max)
       .def_readwrite("joint_acc_max", &ControllerConfig::joint_acc_max)
+      .def_readwrite("home_position", &ControllerConfig::home_position)
       .def_readwrite("over_current_cnt_max",
                      &ControllerConfig::over_current_cnt_max)
       .def_readwrite("controller_freq_hz",
