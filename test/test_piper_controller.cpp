@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
     controller_config.interface_name = interface_name;
     controller_config.urdf_path = urdf_path;
     controller_config.gripper_on = gripper_on;
+    controller_config.gravity_compensation=false;
 
     spdlog::info("Controller config: interface={}, urdf={}, gripper={}",
                  controller_config.interface_name,
