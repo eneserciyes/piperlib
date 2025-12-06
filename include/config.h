@@ -25,8 +25,8 @@ public:
       std::array<double, MOTOR_DOF> default_kd = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
       std::array<double, MOTOR_DOF> joint_vel_max = {3.14, 3.40, 3.14, 3.92,
                                                      3.92, 3.92},
-      std::array<double, MOTOR_DOF> joint_acc_max = {10.0, 10.0, 10.0, 10.0, 10.0,
-                                                     10.0},
+      std::array<double, MOTOR_DOF> joint_acc_max = {5.0, 5.0, 5.0, 5.0, 5.0,
+                                                     5.0},
       std::array<double, MOTOR_DOF> home_position = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
       int over_current_cnt_max = 20, double controller_freq_hz = 500.0,
       bool gravity_compensation = true, bool gripper_on = false)
