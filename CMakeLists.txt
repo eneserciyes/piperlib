@@ -29,7 +29,7 @@ find_package(Catch2 REQUIRED)
 find_package(ruckig REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories($ENV{HOME}/miniforge3/envs/piperlib/include)
+include_directories(${PIPERLIB_CONDA_ENV}/include)
 
 # Ensure build-tree RPATHs use $ORIGIN so binaries/modules find colocated libs
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)

@@ -9,7 +9,7 @@ Stephen Brawner (brawner@gmail.com)
   <joint name="base_to_dummy" type="fixed">
     <parent link="dummy_link" />
     <child link="base_link" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0" rpy="0.785398 0 0" />
   </joint>
 
   <link
@@ -34,7 +34,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link0.stl" />
+          filename="package://piper_description/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -48,7 +48,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link0.stl" />
+          filename="package://piper_description/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -75,7 +75,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link1.stl" />
+          filename="package://piper_description/meshes/link1.STL" />
       </geometry>
       <material
         name="">
@@ -89,7 +89,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link1.stl" />
+          filename="package://piper_description/meshes/link1.STL" />
       </geometry>
     </collision>
   </link>
@@ -133,7 +133,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link2.stl" />
+          filename="package://piper_description/meshes/link2.STL" />
       </geometry>
       <material
         name="">
@@ -147,7 +147,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link2.stl" />
+          filename="package://piper_description/meshes/link2.STL" />
       </geometry>
     </collision>
   </link>
@@ -192,7 +192,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link3.stl" />
+          filename="package://piper_description/meshes/link3.STL" />
       </geometry>
       <material
         name="">
@@ -206,7 +206,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link3.stl" />
+          filename="package://piper_description/meshes/link3.STL" />
       </geometry>
     </collision>
   </link>
@@ -251,7 +251,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link4.stl" />
+          filename="package://piper_description/meshes/link4.STL" />
       </geometry>
       <material
         name="">
@@ -265,7 +265,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link4.stl" />
+          filename="package://piper_description/meshes/link4.STL" />
       </geometry>
     </collision>
   </link>
@@ -309,7 +309,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link5.stl" />
+          filename="package://piper_description/meshes/link5.STL" />
       </geometry>
       <material
         name="">
@@ -323,7 +323,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link5.stl" />
+          filename="package://piper_description/meshes/link5.STL" />
       </geometry>
     </collision>
   </link>
@@ -367,7 +367,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link6.stl" />
+          filename="package://piper_description/meshes/link6.STL" />
       </geometry>
       <material
         name="">
@@ -381,7 +381,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link6.stl" />
+          filename="package://piper_description/meshes/link6.STL" />
       </geometry>
     </collision>
   </link>
@@ -403,6 +403,7 @@ Stephen Brawner (brawner@gmail.com)
       effort="100"
       velocity="3" />
   </joint>
+
   <link
     name="gripper_base">
     <inertial>
@@ -410,7 +411,7 @@ Stephen Brawner (brawner@gmail.com)
         xyz="-0.000183807162235591 8.05033155577911E-05 0.0321436689908876"
         rpy="0 0 0" />
       <mass
-        value="0.45" />
+        value="0.25" />
       <inertia
         ixx="0.00092934"
         ixy="0.00000034"
@@ -425,7 +426,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="gripper_base.stl" />
+          filename="package://piper_description/meshes/gripper_base.STL" />
       </geometry>
       <material
         name="">
@@ -439,7 +440,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="gripper_base.stl" />
+          filename="package://piper_description/meshes/gripper_base.STL" />
       </geometry>
     </collision>
   </link>
@@ -461,7 +462,7 @@ Stephen Brawner (brawner@gmail.com)
         xyz="0.00065123185041968 -0.0491929869131989 0.00972258769184025"
         rpy="0 0 0" />
       <mass
-        value="0.025" />
+	value="0.01" />
       <inertia
         ixx="0.00007371"
         ixy="-0.00000113"
@@ -476,7 +477,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link7.stl" />
+          filename="package://piper_description/meshes/link7.STL" />
       </geometry>
       <material
         name="">
@@ -490,7 +491,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link7.stl" />
+          filename="package://piper_description/meshes/link7.STL" />
       </geometry>
     </collision>
   </link>
@@ -519,7 +520,7 @@ Stephen Brawner (brawner@gmail.com)
         xyz="0.000651231850419722 -0.0491929869131991 0.00972258769184024"
         rpy="0 0 0" />
       <mass
-        value="0.025" />
+        value="0.01" />
       <inertia
         ixx="0.00007371"
         ixy="-0.00000113"
@@ -534,7 +535,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link8.stl" />
+          filename="package://piper_description/meshes/link8.STL" />
       </geometry>
       <material
         name="">
@@ -548,7 +549,7 @@ Stephen Brawner (brawner@gmail.com)
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="link8.stl" />
+          filename="package://piper_description/meshes/link8.STL" />
       </geometry>
     </collision>
   </link>

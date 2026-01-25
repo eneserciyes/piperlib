@@ -14,7 +14,7 @@ void print_usage(const char* prog_name) {
     std::cout << "Usage: " << prog_name << " [options]\n"
               << "Options:\n"
               << "  -i, --interface <name>  CAN interface name (default: can_left)\n"
-              << "  -u, --urdf <path>       Path to URDF file (default: ../urdf/piper_no_gripper_description.urdf)\n"
+              << "  -u, --urdf <path>       Path to URDF file (default: ../urdf/piper_cone-e_left.urdf)\n"
               << "  -g, --gripper           Enable gripper (default: false)\n"
               << "  -h, --help              Show this help message\n";
 }
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
   // Default configuration
   std::string interface_name = "can_left";
-  std::string urdf_path = "../urdf/piper_no_gripper_description.urdf";
+  std::string urdf_path = "../urdf/piper_cone-e_left.urdf";
   bool gripper_on = false;
 
   // Parse arguments

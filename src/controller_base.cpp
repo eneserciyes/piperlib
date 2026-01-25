@@ -12,12 +12,35 @@ PiperController::PiperController(ControllerConfig controller_config)
   target_velocity_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   target_acceleration_ = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   target_gripper_pos_ = 1.0f;
+  minimum_duration_ = 0.0f;
 }
 
 PiperController::~PiperController() { stop(); }
 
 void PiperController::resetToHome() {
-  // TODO: implement
+  setTarget(
+      controller_config_.home_position,
+      1.0f,
+      3.0f // minimum duration
+  );
+
+  // wait until homed
+  while (true) {
+    auto current_state = getCurrentState();
+    bool is_close = true;
+    for (size_t i = 0; i < MOTOR_DOF; ++i) {
+      if (std::abs(current_state.pos[i] - controller_config_.home_position[i]) > 0.05) {
+        is_close = false;
+        break;
+      }
+    }
+
+    if (is_close) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  spdlog::info("Arm reset to home successfully");
 }
 
 bool PiperController::start() {
@@ -61,6 +84,7 @@ void PiperController::stop() {
 void PiperController::setTarget(
     const std::array<double, MOTOR_DOF> &new_target_pos,
     const float new_target_gripper_pos,
+    const float minimum_duration,
     const std::array<double, MOTOR_DOF> &new_target_vel,
     const std::array<double, MOTOR_DOF> &new_target_acc) {
   std::lock_guard<std::mutex> lock(target_mutex_);
@@ -68,6 +92,7 @@ void PiperController::setTarget(
   target_velocity_ = new_target_vel;
   target_acceleration_ = new_target_acc;
   target_gripper_pos_ = new_target_gripper_pos;
+  minimum_duration_ = minimum_duration;
   new_target_flag_.store(true);
   spdlog::debug("Target set to: [{}]", ::join(new_target_pos));
 }
@@ -84,7 +109,6 @@ JointState PiperController::getCurrentState() {
 }
 
 void PiperController::driverProtection() {
-  // TODO: make sure this is working
   bool over_current = false;
   for (int i = 0; i < MOTOR_DOF; ++i) {
     DriverStatus driver_status = piper_interface_.get_driver_status(i);
@@ -153,7 +177,6 @@ void PiperController::controlLoop() {
   input.max_acceleration = controller_config_.joint_acc_max;
 
   JointState output_joint_cmd;
-  bool trajectory_active{false};
 
   RateLimiter rate_limiter(controller_config_.controller_freq_hz);
   while (!should_stop_.load()) {
@@ -162,10 +185,12 @@ void PiperController::controlLoop() {
       input.target_position = target_position_;
       input.target_velocity = target_velocity_;
       input.target_acceleration = target_acceleration_;
-      trajectory_active = true;
+      input.minimum_duration = minimum_duration_;
+      trajectory_active_.store(true);
       spdlog::debug("New target received: [{}]", ::join(input.target_position));
     }
-    if (trajectory_active) {
+    auto current_joint_state = piper_interface_.get_current_state();
+    if (trajectory_active_.load()) {
       ruckig::Result result = otg_.update(input, output);
 
       if (result == ruckig::Result::Working) {
@@ -174,8 +199,8 @@ void PiperController::controlLoop() {
 
         if (controller_config_.gravity_compensation) {
           std::array<double, MOTOR_DOF> gravity_compensation =
-              solver_.inverse_dynamics(output_joint_cmd.pos,
-                                       output_joint_cmd.vel,
+              solver_.inverse_dynamics(current_joint_state.pos,
+                                       current_joint_state.vel,
                                        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
           output_joint_cmd.torque = gravity_compensation;
         } else {
@@ -186,11 +211,10 @@ void PiperController::controlLoop() {
         output.pass_to_input(input);
       } else if (result == ruckig::Result::Finished) {
         spdlog::debug("Trajectory completed");
-        trajectory_active = false;
+        trajectory_active_.store(false);
       }
     } else {
       if (controller_config_.gravity_compensation) {
-        auto current_joint_state = piper_interface_.get_current_state();
         std::array<double, MOTOR_DOF> gravity_compensation =
             solver_.inverse_dynamics(current_joint_state.pos,
                                      current_joint_state.vel,

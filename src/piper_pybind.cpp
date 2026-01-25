@@ -43,6 +43,7 @@ PYBIND11_MODULE(_piperlib, m) {
       .def("get_current_target", &PiperController::getCurrentTarget)
       .def("set_target", &PiperController::setTarget, py::arg("new_target_pos"),
            py::arg("new_target_gripper_pos"),
+           py::arg("minimum_duration") = 0.0f,
            py::arg("new_target_vel") =
                std::array<double, MOTOR_DOF>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
            py::arg("new_target_acc") =
@@ -55,6 +56,7 @@ PYBIND11_MODULE(_piperlib, m) {
       .def_readwrite("default_kd", &ControllerConfig::default_kd)
       .def_readwrite("joint_vel_max", &ControllerConfig::joint_vel_max)
       .def_readwrite("joint_acc_max", &ControllerConfig::joint_acc_max)
+      .def_readwrite("home_position", &ControllerConfig::home_position)
       .def_readwrite("over_current_cnt_max",
                      &ControllerConfig::over_current_cnt_max)
       .def_readwrite("controller_freq_hz",

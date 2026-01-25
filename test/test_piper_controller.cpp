@@ -7,7 +7,7 @@ void print_usage(const char* prog_name) {
     std::cout << "Usage: " << prog_name << " [options]\n"
               << "Options:\n"
               << "  -i, --interface <name>  CAN interface name (default: can_left)\n"
-              << "  -u, --urdf <path>       Path to URDF file (default: ../urdf/piper_no_gripper_description.urdf)\n"
+              << "  -u, --urdf <path>       Path to URDF file (default: ../urdf/piper_cone-e_left.urdf)\n"
               << "  -g, --gripper           Enable gripper (default: false)\n"
               << "  -h, --help              Show this help message\n";
 }
@@ -15,7 +15,7 @@ void print_usage(const char* prog_name) {
 int main(int argc, char* argv[]) {
   // Default configuration
   std::string interface_name = "can_left";
-  std::string urdf_path = "../urdf/piper_no_gripper_description.urdf";
+  std::string urdf_path = "../urdf/piper_cone-e_left.urdf";
   bool gripper_on = false;
 
   // Parse arguments
@@ -52,12 +52,13 @@ int main(int argc, char* argv[]) {
     controller_config.interface_name = interface_name;
     controller_config.urdf_path = urdf_path;
     controller_config.gripper_on = gripper_on;
+    controller_config.gravity_compensation=false;
 
-    spdlog::info("Controller config: interface={}, urdf={}, gripper={}", 
-                 controller_config.interface_name, 
+    spdlog::info("Controller config: interface={}, urdf={}, gripper={}",
+                 controller_config.interface_name,
                  controller_config.urdf_path,
                  controller_config.gripper_on);
-                 
+
     PiperController joint_controller(controller_config);
 
     if (!joint_controller.start()) {
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) {
 
     spdlog::info("Controller started. Commanding various joint states...");
 
-    sleep_ms(1000);
+    joint_controller.resetToHome();
 
     joint_controller.setTarget({0.2, 0.2, -0.2, 0.3, -0.2, 0.5}, 0.0f);
     sleep_ms(3000);

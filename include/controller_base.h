@@ -23,6 +23,7 @@ public:
   void setTarget(
       const std::array<double, MOTOR_DOF> &new_target_pos,
       const float new_target_gripper_pos,
+      const float minimum_duration = 0.0f,
       const std::array<double, MOTOR_DOF> &new_target_vel = {0.0, 0.0, 0.0, 0.0,
                                                              0.0, 0.0},
       const std::array<double, MOTOR_DOF> &new_target_acc = {0.0, 0.0, 0.0, 0.0,
@@ -38,6 +39,7 @@ private:
   std::array<double, MOTOR_DOF> target_velocity_;
   std::array<double, MOTOR_DOF> target_acceleration_;
   float target_gripper_pos_;
+  float minimum_duration_;
 
   PiperInterface piper_interface_;
   std::thread control_loop_thread_;
@@ -45,6 +47,7 @@ private:
   std::atomic<bool> control_loop_running_{false};
   std::atomic<bool> should_stop_{false};
   std::atomic<bool> new_target_flag_{false};
+  std::atomic<bool> trajectory_active_{false};
 
   std::chrono::microseconds start_time_us_;
   int over_current_cnt_ = 0;
